@@ -63,7 +63,7 @@ textarea { resize: vertical; min-height: 60px; }
 .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #0f3a8a 0%, #1e4ea8 100%); }
 .login-card { background: var(--bg-pri); border-radius: 14px; padding: 32px; max-width: 400px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
 .login-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
-.login-mark { width: 56px; height: 56px; border-radius: 10px; object-fit: cover; flex-shrink: 0; }
+.login-mark { width: 56px; height: 56px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; flex-shrink: 0; }
 .login-brand h1 { font-size: 17px; font-weight: 600; margin: 0 0 4px; }
 .login-brand p { font-size: 10px; color: var(--text-sec); margin: 0; letter-spacing: 1px; text-transform: uppercase; }
 .login-brand p b { color: var(--primary); font-weight: 700; }
@@ -86,8 +86,8 @@ textarea { resize: vertical; min-height: 60px; }
 
 .gbm-head { background: linear-gradient(135deg, #0f3a8a 0%, #1e4ea8 100%); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; padding-top: max(10px, env(safe-area-inset-top)); }
 .gbm-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.gbm-mark { width: 32px; height: 32px; border-radius: 6px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; }
-.gbm-mark img { width: 100%; height: 100%; object-fit: cover; }
+.gbm-mark { width: 36px; height: 36px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 3px; }
+.gbm-mark img { width: 100%; height: 100%; object-fit: contain; }
 .gbm-title { min-width: 0; }
 .gbm-title h1 { font-size: 13px; font-weight: 600; margin: 0; white-space: nowrap; letter-spacing: 0.3px; }
 .gbm-title .sub { font-size: 9px; color: rgba(255,255,255,0.75); letter-spacing: 0.5px; text-transform: uppercase; }
