@@ -172,8 +172,8 @@ function rendTot() { const lines = document.querySelectorAll('#lines .li'); cons
 
 function gdiFooter() { return `<div class="gdi-footer"><img src="${GDI_GLOBE}" alt="Global Deal Inc"><div class="pby">Created with<br><b>Global Business Manager</b><br>powered by <b>GLOBAL</b><span>DEAL</span> <b>INC.</b></div></div>`; }
 
-function partiesHTML(doc) { const s = D.settings; return `<div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:12px;font-size:11px;"><div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;font-size:10px;text-transform:uppercase;color:#555;">From</div><div style="font-weight:600;">${esc(s.businessName||'Your business')}</div><div style="white-space:pre-line;">${esc(s.address)}</div>${s.phone ? `<div>${esc(s.phone)}</div>` : ''}${s.email ? `<div>${esc(s.email)}</div>` : ''}${s.website ? `<div>${esc(s.website)}</div>` : ''}${s.taxNumber ? `<div>${esc(s.taxLabel)} #: ${esc(s.taxNumber)}</div>` : ''}${s.regNumber ? `<div>Reg #: ${esc(s.regNumber)}</div>` : ''}</div><div style="flex:1;"><div style="font-weight:600;margin-bottom:4px;font-size:10px;text-transform:uppercase;color:#555;">${doc.status && !doc.payments ? 'Quote for' : 'Bill to'}</div><div style="font-weight:600;">${esc(doc.customer)}</div><div style="white-space:pre-line;">${esc(doc.address)}</div>${doc.email ? `<div>${esc(doc.email)}</div>` : ''}${doc.phone ? `<div>${esc(doc.phone)}</div>` : ''}${doc.custTax ? `<div>${esc(s.taxLabel)} #: ${esc(doc.custTax)}</div>` : ''}</div></div>`; }
-function itemsHTML(doc, cs) { return `<table><thead><tr><th>Description</th><th style="text-align:right;width:50px;">Qty</th><th style="text-align:right;width:80px;">Unit</th><th style="text-align:right;width:90px;">Amount</th></tr></thead><tbody>${doc.items.map(it => `<tr class="li-row"><td>${esc(it.desc)}</td><td style="text-align:right;">${it.qty}</td><td style="text-align:right;">${fmt(it.price, cs)}</td><td style="text-align:right;">${fmt(it.qty*it.price, cs)}</td></tr>`).join('')}</tbody></table><table class="tot"><tr><td class="lab">Subtotal</td><td class="val">${fmt(doc.subtotal, cs)}</td></tr>${doc.taxAmount > 0 ? `<tr><td class="lab">${esc(D.settings.taxLabel)} @ ${doc.taxRate||D.settings.taxRate}%</td><td class="val">${fmt(doc.taxAmount, cs)}</td></tr>` : ''}<tr><td class="lab">Total ${doc.payments ? 'due' : ''}</td><td class="val">${fmt(doc.total, cs)}</td></tr></table>`; }
+function partiesHTML(doc) { const s = D.settings; return `<div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:12px;font-size:10px;line-height:1.45;"><div style="flex:1;"><div style="font-weight:700;margin-bottom:5px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#777;">From</div><div style="font-weight:700;font-size:11px;margin-bottom:2px;">${esc(s.businessName||'Your business')}</div><div style="white-space:pre-line;color:#444;">${esc(s.address)}</div>${s.phone ? `<div style="color:#444;">${esc(s.phone)}</div>` : ''}${s.email ? `<div style="color:#444;">${esc(s.email)}</div>` : ''}${s.website ? `<div style="color:#444;">${esc(s.website)}</div>` : ''}${s.taxNumber ? `<div style="color:#444;">${esc(s.taxLabel)} #: ${esc(s.taxNumber)}</div>` : ''}${s.regNumber ? `<div style="color:#444;">Reg #: ${esc(s.regNumber)}</div>` : ''}</div><div style="flex:1;"><div style="font-weight:700;margin-bottom:5px;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#777;">${doc.status && !doc.payments ? 'Quote for' : 'Bill to'}</div><div style="font-weight:700;font-size:11px;margin-bottom:2px;">${esc(doc.customer)}</div><div style="white-space:pre-line;color:#444;">${esc(doc.address)}</div>${doc.email ? `<div style="color:#444;">${esc(doc.email)}</div>` : ''}${doc.phone ? `<div style="color:#444;">${esc(doc.phone)}</div>` : ''}${doc.custTax ? `<div style="color:#444;">${esc(s.taxLabel)} #: ${esc(doc.custTax)}</div>` : ''}</div></div>`; }
+function itemsHTML(doc, cs) { return `<table style="font-size:10px;"><thead><tr><th style="font-size:9px;letter-spacing:0.6px;">Description</th><th style="text-align:right;width:50px;font-size:9px;letter-spacing:0.6px;">Qty</th><th style="text-align:right;width:90px;font-size:9px;letter-spacing:0.6px;">Unit price</th><th style="text-align:right;width:100px;font-size:9px;letter-spacing:0.6px;">Amount</th></tr></thead><tbody>${doc.items.map(it => `<tr class="li-row"><td style="padding:8px 4px;">${esc(it.desc)}</td><td style="text-align:right;padding:8px 4px;">${it.qty}</td><td style="text-align:right;padding:8px 4px;">${fmt(it.price, cs)}</td><td style="text-align:right;padding:8px 4px;">${fmt(it.qty*it.price, cs)}</td></tr>`).join('')}</tbody></table><table class="tot" style="font-size:10px;"><tr><td class="lab" style="color:#444;">Subtotal</td><td class="val">${fmt(doc.subtotal, cs)}</td></tr>${doc.taxAmount > 0 ? `<tr><td class="lab" style="color:#444;">${esc(D.settings.taxLabel)} @ ${doc.taxRate||D.settings.taxRate}%</td><td class="val">${fmt(doc.taxAmount, cs)}</td></tr>` : ''}<tr><td class="lab">Total ${doc.payments ? 'due' : ''}</td><td class="val">${fmt(doc.total, cs)}</td></tr></table>`; }
 
 function vInvDetail(id) {
   const inv = D.invoices.find(i => i.id === id); if (!inv) return `<div class="empty">Invoice not found</div>`;
@@ -197,7 +197,7 @@ function vInvDetail(id) {
       </div>
       ${partiesHTML(inv)}
       ${itemsHTML(inv, cs)}
-      ${s.bankDetails ? `<div style="margin-top:16px;padding-top:10px;border-top:0.5px solid #ccc;font-size:11px;"><div style="font-weight:600;margin-bottom:3px;text-transform:uppercase;font-size:10px;color:#555;">Banking details</div><div style="white-space:pre-line;">${esc(s.bankDetails)}</div></div>` : ''}
+      ${s.bankDetails ? `<div style="margin-top:18px;padding-top:12px;border-top:0.5px solid #ddd;"><div style="font-weight:700;margin-bottom:5px;text-transform:uppercase;font-size:9px;letter-spacing:1px;color:#777;">Banking details</div><div style="white-space:pre-line;font-size:10px;line-height:1.55;">${esc(s.bankDetails)}</div></div>` : ''}
       ${gdiFooter()}
     </div>
     <div class="secH"><h3>Payments (${(inv.payments||[]).length})</h3>${bal > 0 ? `<button class="bl" data-pay-inv="${inv.id}"><i class="ti ti-plus"></i> Record payment</button>` : ''}</div>
@@ -573,71 +573,159 @@ async function convQuote(qid) {
   sub = {type: 'inv-view', id: nid}; view = 'inv'; salesTab = 'inv'; render(); toast('Converted to invoice');
 }
 
+// Build clean PDF-optimized HTML for an invoice or quote.
+// Uses explicit, well-balanced typography and a scoped <style> block so the
+// PDF output is identical regardless of screen rendering or dark mode.
+function buildPdfHtml(doc, isQuote) {
+  const s = D.settings;
+  const cs = sym(doc.currency);
+  const title = isQuote ? 'QUOTATION' : 'TAX INVOICE';
+  const dueLabel = isQuote ? 'Valid until' : 'Due';
+  const totalLabel = isQuote ? 'Total' : 'Total due';
+
+  return `
+  <style>
+    .pdf-doc { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a1a; background: #fff; padding: 36px 40px; width: 794px; box-sizing: border-box; font-size: 10px; line-height: 1.45; }
+    .pdf-doc * { box-sizing: border-box; }
+    .pdf-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 24px; }
+    .pdf-head .lhs { flex: 1; }
+    .pdf-head .logo { max-width: 140px; max-height: 64px; object-fit: contain; margin-bottom: 10px; display: block; }
+    .pdf-head h1 { font-size: 22px; font-weight: 700; letter-spacing: 1.5px; color: #0f3a8a; margin: 0 0 4px; line-height: 1; }
+    .pdf-head .num { font-size: 11px; color: #777; }
+    .pdf-head .meta { text-align: right; font-size: 10px; line-height: 1.6; }
+    .pdf-head .meta .lab { color: #777; }
+    .pdf-parties { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 20px; }
+    .pdf-party { flex: 1; }
+    .pdf-party .role { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #777; margin-bottom: 5px; }
+    .pdf-party .name { font-size: 11px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+    .pdf-party .line { font-size: 10px; color: #444; white-space: pre-line; }
+    .pdf-table { width: 100%; border-collapse: collapse; margin: 0 0 14px; }
+    .pdf-table thead th { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: #0f3a8a; padding: 8px 6px; border-bottom: 1.2px solid #0f3a8a; text-align: left; }
+    .pdf-table thead th.r { text-align: right; }
+    .pdf-table tbody td { font-size: 10px; padding: 8px 6px; border-bottom: 0.5px solid #eee; color: #1a1a1a; vertical-align: top; }
+    .pdf-table tbody td.r { text-align: right; }
+    .pdf-totals { width: 100%; margin-top: 4px; }
+    .pdf-totals td { padding: 4px 6px; font-size: 10px; color: #444; }
+    .pdf-totals td.lab { text-align: right; }
+    .pdf-totals td.val { text-align: right; width: 110px; color: #1a1a1a; }
+    .pdf-totals tr.tot td { font-size: 12px; font-weight: 700; color: #0f3a8a; border-top: 1.5px solid #0f3a8a; padding-top: 9px; }
+    .pdf-bank { margin-top: 20px; padding-top: 12px; border-top: 0.5px solid #ddd; }
+    .pdf-bank .role { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #777; margin-bottom: 5px; }
+    .pdf-bank .lines { font-size: 10px; color: #1a1a1a; white-space: pre-line; line-height: 1.55; }
+    .pdf-foot { margin-top: 28px; padding-top: 12px; border-top: 0.5px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .pdf-foot img { height: 26px; opacity: 0.85; }
+    .pdf-foot .pby { font-size: 7.5px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; text-align: right; line-height: 1.5; }
+    .pdf-foot .pby b { color: #0f3a8a; font-weight: 700; }
+    .pdf-foot .pby span { color: #f4a623; font-weight: 700; }
+  </style>
+  <div class="pdf-doc">
+    <div class="pdf-head">
+      <div class="lhs">
+        ${s.hasLogo && logoDataUrl ? `<img class="logo" src="${logoDataUrl}" alt="Logo">` : ''}
+        <h1>${title}</h1>
+        <div class="num">${esc(doc.number)}</div>
+      </div>
+      <div class="meta">
+        <div><span class="lab">Date:</span> ${fmtDate(doc.date)}</div>
+        <div><span class="lab">${dueLabel}:</span> ${fmtDate(doc.due)}</div>
+        ${doc.currency !== s.currency ? `<div style="margin-top:4px;"><span class="lab">Currency:</span> ${esc(doc.currency)}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="pdf-parties">
+      <div class="pdf-party">
+        <div class="role">From</div>
+        <div class="name">${esc(s.businessName || 'Your business')}</div>
+        ${s.address ? `<div class="line">${esc(s.address)}</div>` : ''}
+        ${s.phone ? `<div class="line">${esc(s.phone)}</div>` : ''}
+        ${s.email ? `<div class="line">${esc(s.email)}</div>` : ''}
+        ${s.website ? `<div class="line">${esc(s.website)}</div>` : ''}
+        ${s.taxNumber ? `<div class="line">${esc(s.taxLabel)} #: ${esc(s.taxNumber)}</div>` : ''}
+        ${s.regNumber ? `<div class="line">Reg #: ${esc(s.regNumber)}</div>` : ''}
+      </div>
+      <div class="pdf-party">
+        <div class="role">${isQuote ? 'Quote for' : 'Bill to'}</div>
+        <div class="name">${esc(doc.customer || '')}</div>
+        ${doc.address ? `<div class="line">${esc(doc.address)}</div>` : ''}
+        ${doc.email ? `<div class="line">${esc(doc.email)}</div>` : ''}
+        ${doc.phone ? `<div class="line">${esc(doc.phone)}</div>` : ''}
+        ${doc.custTax ? `<div class="line">${esc(s.taxLabel)} #: ${esc(doc.custTax)}</div>` : ''}
+      </div>
+    </div>
+
+    <table class="pdf-table">
+      <thead><tr><th>Description</th><th class="r" style="width:50px;">Qty</th><th class="r" style="width:90px;">Unit price</th><th class="r" style="width:100px;">Amount</th></tr></thead>
+      <tbody>
+        ${doc.items.map(it => `<tr><td>${esc(it.desc)}</td><td class="r">${it.qty}</td><td class="r">${fmt(it.price, cs)}</td><td class="r">${fmt(it.qty * it.price, cs)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+
+    <table class="pdf-totals">
+      <tr><td class="lab">Subtotal</td><td class="val">${fmt(doc.subtotal, cs)}</td></tr>
+      ${doc.taxAmount > 0 ? `<tr><td class="lab">${esc(s.taxLabel)} @ ${doc.taxRate || s.taxRate}%</td><td class="val">${fmt(doc.taxAmount, cs)}</td></tr>` : ''}
+      <tr class="tot"><td class="lab">${totalLabel}</td><td class="val">${fmt(doc.total, cs)}</td></tr>
+    </table>
+
+    ${!isQuote && s.bankDetails ? `<div class="pdf-bank"><div class="role">Banking details</div><div class="lines">${esc(s.bankDetails)}</div></div>` : ''}
+
+    <div class="pdf-foot">
+      <img src="${GDI_GLOBE}" alt="Global Deal Inc">
+      <div class="pby">Created with<br><b>Global Business Manager</b><br>powered by <b>GLOBAL</b><span>DEAL</span> <b>INC.</b></div>
+    </div>
+  </div>`;
+}
+
 async function exportPDF(id, kind) {
-  const el = document.getElementById('invPrintable');
   const doc = kind === 'quo' ? D.quotes.find(x => x.id === id) : D.invoices.find(x => x.id === id);
-  if (!el || !doc) { toast('Could not find document'); return; }
+  if (!doc) { toast('Could not find document'); return; }
   if (!window.html2canvas || !window.jspdf) { toast('PDF library still loading'); return; }
   toast('Generating PDF…');
 
-  // Clone the invoice into a hidden off-screen container at fixed A4 width
-  // so that mobile screens don't produce huge zoomed-up PDFs.
-  const A4_WIDTH_PX = 794; // ~210mm at 96 DPI
+  // Build clean PDF HTML in an off-screen container
   const wrap = document.createElement('div');
-  wrap.style.cssText = `position:fixed;left:-10000px;top:0;width:${A4_WIDTH_PX}px;background:#fff;color:#1a1a1a;padding:0;z-index:-1;`;
-  const clone = el.cloneNode(true);
-  clone.style.width = '100%';
-  clone.style.maxWidth = 'none';
-  clone.style.background = '#fff';
-  clone.style.color = '#1a1a1a';
-  clone.style.border = 'none';
-  clone.style.borderRadius = '0';
-  clone.style.padding = '32px';
-  clone.style.fontSize = '12px';
-  // Force light colors inside the clone regardless of dark mode
-  clone.querySelectorAll('*').forEach(node => {
-    if (node.tagName === 'IMG') return;
-    node.style.color = '';
-    node.style.background = '';
-    node.style.backgroundColor = '';
-  });
-  wrap.appendChild(clone);
+  wrap.style.cssText = 'position:fixed;left:-10000px;top:0;background:#fff;z-index:-1;';
+  wrap.innerHTML = buildPdfHtml(doc, kind === 'quo');
   document.body.appendChild(wrap);
+  const renderTarget = wrap.querySelector('.pdf-doc');
 
   try {
-    // Wait a frame so layout settles
+    // Wait a frame so images/layout settle
     await new Promise(r => requestAnimationFrame(r));
-    const canvas = await window.html2canvas(clone, {
+    await new Promise(r => setTimeout(r, 50));
+
+    const canvas = await window.html2canvas(renderTarget, {
       scale: 2,
       backgroundColor: '#ffffff',
       useCORS: true,
       logging: false,
-      width: A4_WIDTH_PX,
-      windowWidth: A4_WIDTH_PX
+      width: 794,
+      windowWidth: 794
     });
-    const imgData = canvas.toDataURL('image/jpeg', 0.95);
-    const {jsPDF} = window.jspdf;
+
+    const { jsPDF } = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const pageH = 297, imgW = 190, imgH = (canvas.height * imgW) / canvas.width;
+    const pageH = 297, imgW = 190;
+    const imgH = (canvas.height * imgW) / canvas.width;
+
     if (imgH <= pageH - 20) {
-      pdf.addImage(imgData, 'JPEG', 10, 10, imgW, imgH);
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 10, 10, imgW, imgH);
     } else {
-      // Multi-page: slice the tall canvas into A4-page-sized pieces
+      // Multi-page: slice the tall canvas into A4-sized chunks
       const pageHeightPx = (pageH - 20) * canvas.width / imgW;
       let yPos = 0;
       while (yPos < canvas.height) {
         const sliceH = Math.min(pageHeightPx, canvas.height - yPos);
-        const sliceCanvas = document.createElement('canvas');
-        sliceCanvas.width = canvas.width;
-        sliceCanvas.height = sliceH;
-        sliceCanvas.getContext('2d').drawImage(canvas, 0, yPos, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
-        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+        const slice = document.createElement('canvas');
+        slice.width = canvas.width;
+        slice.height = sliceH;
+        slice.getContext('2d').drawImage(canvas, 0, yPos, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
         const sliceImgH = (sliceH * imgW) / canvas.width;
         if (yPos > 0) pdf.addPage();
-        pdf.addImage(sliceData, 'JPEG', 10, 10, imgW, sliceImgH);
+        pdf.addImage(slice.toDataURL('image/jpeg', 0.95), 'JPEG', 10, 10, imgW, sliceImgH);
         yPos += sliceH;
       }
     }
+
     pdf.save((doc.number || (kind === 'quo' ? 'quote' : 'invoice')) + '.pdf');
     toast('PDF downloaded');
   } catch (err) {
