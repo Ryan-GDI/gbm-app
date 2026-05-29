@@ -51,7 +51,7 @@
 }
 
 * { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; min-height: 100%; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; -webkit-tap-highlight-color: transparent; }
 body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.4; }
 
 input, select, textarea, button { font-family: inherit; font-size: 13px; color: var(--text); }
@@ -60,7 +60,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); o
 textarea { resize: vertical; min-height: 60px; }
 
 /* ====== LOGIN SCREEN ====== */
-.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #0f3a8a 0%, #1e4ea8 100%); }
+.login-screen { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 20px; background: linear-gradient(135deg, #0f3a8a 0%, #1e4ea8 100%); overflow-y: auto; }
 .login-card { background: var(--bg-pri); border-radius: 14px; padding: 32px; max-width: 400px; width: 100%; box-shadow: 0 10px 40px rgba(0,0,0,0.15); }
 .login-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; }
 .login-mark { width: 56px; height: 56px; border-radius: 10px; object-fit: contain; background: #fff; padding: 4px; flex-shrink: 0; }
@@ -77,14 +77,21 @@ textarea { resize: vertical; min-height: 60px; }
 
 /* ====== APP SHELL ====== */
 .app-screen { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 0; background: var(--bg); }
-.gbm { display: flex; flex-direction: column; background: var(--bg-ter); border-radius: 12px; border: 0.5px solid var(--bd); overflow: hidden; min-height: 100vh; max-width: 520px; width: 100%; margin: 0 auto; position: relative; }
+/* ====== APP SHELL — fixed viewport with scrolling body ====== */
+.app-screen { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: stretch; padding: 0; background: var(--bg); }
+
+.gbm { display: flex; flex-direction: column; background: var(--bg-ter); border-radius: 0; border: none; overflow: hidden; height: 100vh; height: 100dvh; max-width: 100%; width: 100%; margin: 0 auto; position: relative; }
 
 @media (min-width: 640px) {
-  .app-screen { padding: 16px; }
-  .gbm { min-height: calc(100vh - 32px); border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+  .app-screen { padding: 16px; align-items: center; }
+  .gbm { height: calc(100vh - 32px); height: calc(100dvh - 32px); max-width: 720px; border-radius: 16px; border: 0.5px solid var(--bd); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
 }
 
-.gbm-head { background: linear-gradient(135deg, #0f3a8a 0%, #1e4ea8 100%); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; padding-top: max(10px, env(safe-area-inset-top)); }
+@media (min-width: 1024px) {
+  .gbm { max-width: 920px; }
+}
+
+.gbm-head { background: linear-gradient(135deg, #0f3a8a 0%, #1e4ea8 100%); padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 8px; color: #fff; padding-top: max(10px, env(safe-area-inset-top)); flex-shrink: 0; }
 .gbm-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .gbm-mark { width: 36px; height: 36px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; flex-shrink: 0; padding: 3px; }
 .gbm-mark img { width: 100%; height: 100%; object-fit: contain; }
@@ -92,25 +99,26 @@ textarea { resize: vertical; min-height: 60px; }
 .gbm-title h1 { font-size: 13px; font-weight: 600; margin: 0; white-space: nowrap; letter-spacing: 0.3px; }
 .gbm-title .sub { font-size: 9px; color: rgba(255,255,255,0.75); letter-spacing: 0.5px; text-transform: uppercase; }
 .gbm-title .sub b { color: var(--accent); font-weight: 600; }
-.head-right { display: flex; align-items: center; gap: 8px; }
+.head-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .biz { font-size: 11px; color: rgba(255,255,255,0.85); max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .icon-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .icon-btn:hover { background: rgba(255,255,255,0.2); }
 .icon-btn i { font-size: 16px; }
 
-.gbm-body { flex: 1; padding: 14px; overflow-y: auto; }
+/* Body is the ONLY scrolling region. Header and tabs stay pinned. */
+.gbm-body { flex: 1 1 auto; min-height: 0; padding: 14px; padding-bottom: 40px; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; }
 .loading-state { text-align: center; padding: 60px 20px; color: var(--text-sec); }
 .spinner { width: 32px; height: 32px; border: 3px solid var(--bd); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 14px; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.gbm-tabs { display: flex; background: var(--bg-pri); border-top: 0.5px solid var(--bd); padding: 6px 2px; gap: 1px; padding-bottom: max(6px, env(safe-area-inset-bottom)); }
+.gbm-tabs { display: flex; background: var(--bg-pri); border-top: 0.5px solid var(--bd); padding: 6px 2px; gap: 1px; padding-bottom: max(6px, env(safe-area-inset-bottom)); flex-shrink: 0; }
 .tb { flex: 1; background: transparent; border: none; padding: 7px 1px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; border-radius: 8px; color: var(--text-sec); font-size: 10px; min-width: 0; }
 .tb:hover { background: var(--bg-sec); }
 .tb.on { color: var(--primary); background: var(--info-bg); }
 .tb i { font-size: 17px; }
 .tb span { overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
 
-.gbm-foot { padding: 6px 14px; background: var(--bg-pri); border-top: 0.5px solid var(--bd); font-size: 9px; color: var(--text-ter); text-align: center; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.gbm-foot { padding: 6px 14px; background: var(--bg-pri); border-top: 0.5px solid var(--bd); font-size: 9px; color: var(--text-ter); text-align: center; letter-spacing: 0.5px; text-transform: uppercase; display: flex; align-items: center; justify-content: center; gap: 6px; flex-shrink: 0; }
 .gbm-foot b { color: var(--primary); font-weight: 600; }
 .gbm-foot span { color: var(--accent); font-weight: 600; }
 
