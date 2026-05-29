@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f3a8a">
+<title>GBM · Global Business Manager</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="manifest" href="/manifest.json">
+<link rel="apple-touch-icon" href="/icon-192.png">
+<link rel="stylesheet" href="/src/styles.css">
+</head>
+<body>
+
+<!-- Login screen -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <img src="/gdi-globe.jpg" alt="GDI" class="login-mark">
+      <div>
+        <h1>Global Business Manager</h1>
+        <p>by <b>GLOBAL</b><span>DEAL</span> INC.</p>
+      </div>
+    </div>
+    <form id="loginForm" class="login-form">
+      <div class="fg">
+        <label>Email</label>
+        <input type="email" name="email" required autocomplete="email">
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="bp" id="loginBtn">Sign in</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+    <div class="login-foot">Private GDI deployment · v1.0</div>
+  </div>
+</div>
+
+<!-- Main app -->
+<div id="appScreen" class="app-screen" style="display:none;">
+  <div class="gbm">
+    <div class="gbm-head">
+      <div class="gbm-brand">
+        <div class="gbm-mark"><img src="/gdi-globe.jpg" alt="GDI"></div>
+        <div class="gbm-title">
+          <h1>Global Business Manager</h1>
+          <div class="sub">by <b>GLOBAL</b><span>DEAL</span> INC.</div>
+        </div>
+      </div>
+      <div class="head-right">
+        <span class="biz" id="bizName"></span>
+        <button class="icon-btn" id="logoutBtn" title="Sign out"><i class="ti ti-logout"></i></button>
+      </div>
+    </div>
+    <div class="gbm-body" id="body">
+      <div class="loading-state"><div class="spinner"></div><p>Loading your data…</p></div>
+    </div>
+    <div class="gbm-tabs">
+      <button class="tb on" data-v="dash"><i class="ti ti-home"></i><span>Home</span></button>
+      <button class="tb" data-v="inv"><i class="ti ti-file-invoice"></i><span>Sales</span></button>
+      <button class="tb" data-v="cust"><i class="ti ti-users"></i><span>Clients</span></button>
+      <button class="tb" data-v="exp"><i class="ti ti-receipt"></i><span>Expenses</span></button>
+      <button class="tb" data-v="rep"><i class="ti ti-chart-bar"></i><span>Reports</span></button>
+      <button class="tb" data-v="set"><i class="ti ti-settings"></i><span>Settings</span></button>
+    </div>
+    <div class="gbm-foot"><span>Powered by</span> <b>GLOBAL</b><span>DEAL</span> <b>INC.</b></div>
+    <div class="toast" id="toast"></div>
+  </div>
+</div>
+
+<!-- Tabler icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css">
+
+<!-- PDF libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<!-- Supabase client -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Config (Vercel injects env vars at build time via this file) -->
+<script src="/src/config.js"></script>
+
+<!-- App scripts -->
+<script type="module" src="/src/main.js"></script>
+
+</body>
+</html>

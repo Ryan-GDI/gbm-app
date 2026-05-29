@@ -1,0 +1,9 @@
+{
+  "name": "gbm-app",
+  "version": "1.0.0",
+  "description": "Global Business Manager — GDI private deployment",
+  "private": true,
+  "scripts": {
+    "build": "node build.js"
+  }
+}
