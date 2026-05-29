@@ -579,17 +579,73 @@ async function exportPDF(id, kind) {
   if (!el || !doc) { toast('Could not find document'); return; }
   if (!window.html2canvas || !window.jspdf) { toast('PDF library still loading'); return; }
   toast('Generating PDF…');
+
+  // Clone the invoice into a hidden off-screen container at fixed A4 width
+  // so that mobile screens don't produce huge zoomed-up PDFs.
+  const A4_WIDTH_PX = 794; // ~210mm at 96 DPI
+  const wrap = document.createElement('div');
+  wrap.style.cssText = `position:fixed;left:-10000px;top:0;width:${A4_WIDTH_PX}px;background:#fff;color:#1a1a1a;padding:0;z-index:-1;`;
+  const clone = el.cloneNode(true);
+  clone.style.width = '100%';
+  clone.style.maxWidth = 'none';
+  clone.style.background = '#fff';
+  clone.style.color = '#1a1a1a';
+  clone.style.border = 'none';
+  clone.style.borderRadius = '0';
+  clone.style.padding = '32px';
+  clone.style.fontSize = '12px';
+  // Force light colors inside the clone regardless of dark mode
+  clone.querySelectorAll('*').forEach(node => {
+    if (node.tagName === 'IMG') return;
+    node.style.color = '';
+    node.style.background = '';
+    node.style.backgroundColor = '';
+  });
+  wrap.appendChild(clone);
+  document.body.appendChild(wrap);
+
   try {
-    const canvas = await window.html2canvas(el, {scale: 2, backgroundColor: '#ffffff', useCORS: true, logging: false});
+    // Wait a frame so layout settles
+    await new Promise(r => requestAnimationFrame(r));
+    const canvas = await window.html2canvas(clone, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      logging: false,
+      width: A4_WIDTH_PX,
+      windowWidth: A4_WIDTH_PX
+    });
     const imgData = canvas.toDataURL('image/jpeg', 0.95);
     const {jsPDF} = window.jspdf;
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageH = 297, imgW = 190, imgH = (canvas.height * imgW) / canvas.width;
-    if (imgH <= pageH - 20) { pdf.addImage(imgData, 'JPEG', 10, 10, imgW, imgH); }
-    else { let pos = 0, rem = imgH; while (rem > 0) { pdf.addImage(imgData, 'JPEG', 10, pos ? -pos + 10 : 10, imgW, imgH); rem -= (pageH - 20); if (rem > 0) { pdf.addPage(); pos += (pageH - 20); } } }
+    if (imgH <= pageH - 20) {
+      pdf.addImage(imgData, 'JPEG', 10, 10, imgW, imgH);
+    } else {
+      // Multi-page: slice the tall canvas into A4-page-sized pieces
+      const pageHeightPx = (pageH - 20) * canvas.width / imgW;
+      let yPos = 0;
+      while (yPos < canvas.height) {
+        const sliceH = Math.min(pageHeightPx, canvas.height - yPos);
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = canvas.width;
+        sliceCanvas.height = sliceH;
+        sliceCanvas.getContext('2d').drawImage(canvas, 0, yPos, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+        const sliceData = sliceCanvas.toDataURL('image/jpeg', 0.95);
+        const sliceImgH = (sliceH * imgW) / canvas.width;
+        if (yPos > 0) pdf.addPage();
+        pdf.addImage(sliceData, 'JPEG', 10, 10, imgW, sliceImgH);
+        yPos += sliceH;
+      }
+    }
     pdf.save((doc.number || (kind === 'quo' ? 'quote' : 'invoice')) + '.pdf');
     toast('PDF downloaded');
-  } catch (err) { toast('PDF export failed'); console.error(err); }
+  } catch (err) {
+    toast('PDF export failed');
+    console.error(err);
+  } finally {
+    document.body.removeChild(wrap);
+  }
 }
 
 // ===== INIT =====

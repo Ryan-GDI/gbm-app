@@ -41,6 +41,12 @@
     --info-bd: #2a4275;
     --pos-bg: #14352a;
     --neg-bg: #3a1818;
+    --primary: #4a86e8;
+    --primary-dk: #6ba0f5;
+    --info-tx: #8ab4f8;
+    --pos: #34d399;
+    --neg: #f87171;
+    --warn-tx: #fbbf24;
   }
 }
 
@@ -131,7 +137,9 @@ textarea { resize: vertical; min-height: 60px; }
 .bp { background: var(--primary); color: white; border: none; padding: 9px 13px; border-radius: 8px; font-size: 13px; cursor: pointer; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; }
 .bp:hover { background: var(--primary-dk); }
 .bp:disabled { opacity: 0.6; cursor: not-allowed; }
-.bl { background: transparent; border: none; color: var(--primary); cursor: pointer; font-size: 13px; padding: 6px; display: inline-flex; align-items: center; gap: 4px; }
+.bl { background: var(--bg-pri); border: 0.5px solid var(--bd); color: var(--primary); cursor: pointer; font-size: 13px; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; }
+.bl:hover { background: var(--bg-sec); }
+.bl i { font-size: 16px; }
 .bbk { display: inline-flex; align-items: center; gap: 4px; background: transparent; border: none; color: var(--text-sec); font-size: 13px; cursor: pointer; padding: 4px 0; margin-bottom: 10px; }
 
 .fg { margin-bottom: 11px; }
