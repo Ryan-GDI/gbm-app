@@ -105,13 +105,20 @@ function statusPill(s) { return {paid:'p-s',partial:'p-w',unpaid:'p-g',overdue:'
 
 function vDash() {
   const recv = recvThisMonth(), exp = expThisMonth(), ar = totalAR();
-  const td = nextTaxDates().slice(0, 3), rec = recurDue();
+  const rec = recurDue();
   const setup = !D.settings.businessName;
-  const dU = d => Math.ceil((d - new Date()) / (1000*60*60*24));
   const bs = D.settings.currencySymbol;
   const ri = [...D.invoices].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 3);
   const re = [...D.expenses].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 3);
   const mix = [...ri.map(i => ({...i, kind:'inv'})), ...re.map(e => ({...e, kind:'exp'}))].sort((a,b) => b.date.localeCompare(a.date)).slice(0, 4);
+
+  // Daily chart for the last 30 days
+  const days = dailySeries(30);
+  const max = Math.max(1, ...days.flatMap(d => [d.in, d.ex]));
+  const totalIn = days.reduce((s, d) => s + d.in, 0);
+  const totalEx = days.reduce((s, d) => s + d.ex, 0);
+  const hasAnyActivity = totalIn > 0 || totalEx > 0;
+
   return `<h2 class="vt">Dashboard</h2>
     ${setup ? `<div class="card" style="background:var(--warn-bg);border-color:var(--warn-bd);" data-go="set"><div class="r1"><div><div style="font-weight:500;font-size:13px;color:var(--warn-tx);">Welcome to GBM</div><div style="font-size:12px;color:var(--warn-tx);margin-top:2px;">Tap to set up your business, country, and tax info</div></div><i class="ti ti-chevron-right" style="color:var(--warn-tx);"></i></div></div>` : ''}
     <div class="mgrid">
@@ -121,8 +128,28 @@ function vDash() {
       <div class="m" style="cursor:pointer;" data-go="inv"><div class="l">Outstanding receivables</div><div class="v ${ar > 0 ? 'warn' : ''}">${fmt(ar, bs)}</div></div>
     </div>
     ${rec.length ? `<div class="secH"><h3>Recurring invoices due</h3></div>${rec.map(r => `<div class="card" style="border-color:var(--info-bd);"><div class="r1"><div><div class="ttl"><i class="ti ti-repeat" style="font-size:14px;color:var(--info-tx);"></i> ${esc(r.customer)}</div><div style="font-size:11px;color:var(--text-sec);">${esc(r.recurringFreq)} · next: ${fmtDate(r.recurringNextDate)}</div></div><button class="bp" data-gen="${r.id}" style="padding:6px 10px;font-size:12px;"><i class="ti ti-plus"></i> Generate</button></div></div>`).join('')}` : ''}
-    <div class="secH"><h3>Upcoming tax dates</h3></div>
-    ${td.length ? `<div class="card" style="cursor:default;padding:4px 12px;">${td.map(x => { const d = dU(x.date); return `<div class="tx-row"><div><div class="lbl">${esc(x.label)}</div><div class="dt">${fmtDate(x.date.toISOString().slice(0,10))}</div></div><div class="when ${d <= 14 ? 'soon' : ''}">${d} days</div></div>`; }).join('')}</div>` : `<div class="gh">Set your country in Settings to see tax deadlines.</div>`}
+
+    <div class="secH"><h3>Sales vs expenses · last 30 days</h3></div>
+    <div class="card" style="cursor:default;padding:14px 12px 10px;">
+      ${hasAnyActivity ? `
+        <div class="daily-chart">
+          ${days.map(d => `
+            <div class="dcol" title="${d.date} — In ${fmt(d.in, bs)} · Out ${fmt(d.ex, bs)}">
+              <div class="dgrp">
+                ${d.in > 0 ? `<div class="dbar b-in" style="height:${(d.in/max)*100}%;"></div>` : '<div class="dbar empty"></div>'}
+                ${d.ex > 0 ? `<div class="dbar b-ex" style="height:${(d.ex/max)*100}%;"></div>` : '<div class="dbar empty"></div>'}
+              </div>
+              <div class="dlab">${d.day}</div>
+            </div>
+          `).join('')}
+        </div>
+        <div class="lgnd" style="margin:8px 0 0;justify-content:space-between;">
+          <span><i class="b-in"></i> Sales ${fmt(totalIn, bs)}</span>
+          <span><i class="b-ex"></i> Expenses ${fmt(totalEx, bs)}</span>
+        </div>
+      ` : `<div class="gh" style="text-align:center;padding:20px 0;margin:0;">No activity in the last 30 days yet.</div>`}
+    </div>
+
     <div class="secH"><h3>Recent activity</h3></div>
     ${mix.length ? mix.map(x => x.kind === 'inv' ? `<div class="card" data-go-inv="${x.id}"><div class="r1"><div><div class="ttl"><i class="ti ti-file-invoice" style="font-size:14px;color:var(--pos);"></i> ${esc(x.customer||'Customer')}</div><div style="font-size:11px;color:var(--text-sec);">${esc(x.number)} · ${fmtDate(x.date)} · <span class="pill ${statusPill(invStatus(x))}">${invStatus(x)}</span></div></div><div class="amt" style="color:var(--pos);">+${fmt(x.total, sym(x.currency))}</div></div></div>` : `<div class="card" data-go-exp="${x.id}"><div class="r1"><div><div class="ttl"><i class="ti ti-receipt" style="font-size:14px;color:var(--neg);"></i> ${esc(x.vendor||'Expense')}</div><div style="font-size:11px;color:var(--text-sec);">${esc(x.category||'')} · ${fmtDate(x.date)}</div></div><div class="amt" style="color:var(--neg);">-${fmt(x.amount, sym(x.currency))}</div></div></div>`).join('') : `<div class="empty"><i class="ti ti-inbox"></i>No activity yet. Create an invoice or capture an expense to begin.</div>`}`;
 }
@@ -322,6 +349,24 @@ function vExpDetail(id) {
 function vRep() { return `<h2 class="vt">Reports · ${new Date().getFullYear()}</h2><div class="subnav"><button class="${reportTab === 'sum' ? 'on' : ''}" data-rep="sum">Summary</button><button class="${reportTab === 'is' ? 'on' : ''}" data-rep="is">Income</button><button class="${reportTab === 'cf' ? 'on' : ''}" data-rep="cf">Cash flow</button><button class="${reportTab === 'tax' ? 'on' : ''}" data-rep="tax">Tax</button></div>${reportTab === 'sum' ? repSum() : reportTab === 'is' ? repIS() : reportTab === 'cf' ? repCF() : repTax()}`; }
 
 function cashSeries(n) { const now = new Date(), s = []; for (let i = n-1; i >= 0; i--) { const d = new Date(now.getFullYear(), now.getMonth()-i, 1); const y = d.getFullYear(), m = d.getMonth(); let inc = 0; D.invoices.forEach(iv => (iv.payments||[]).forEach(p => { const dd = new Date(p.date); if (dd.getFullYear() === y && dd.getMonth() === m) inc += toBase(p.amount, iv); })); const ex = D.expenses.filter(x => { const dd = new Date(x.date); return dd.getFullYear() === y && dd.getMonth() === m; }).reduce((s,x) => s + toBase(x.amount, x), 0); s.push({label: d.toLocaleDateString('en', {month:'short'}) + (n > 6 ? ' ' + String(d.getFullYear()).slice(2) : ''), in: inc, ex}); } return s; }
+
+// Daily series for the last N days. Each bucket is one day.
+// `inc` is invoice TOTAL on that day (sales), not payments — gives an "activity today" view.
+function dailySeries(days) {
+  const now = new Date();
+  const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const out = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today0); d.setDate(d.getDate() - i);
+    const iso = d.toISOString().slice(0, 10);
+    const inv = D.invoices.filter(x => x.date === iso);
+    const exp = D.expenses.filter(x => x.date === iso);
+    const inc = inv.reduce((s, x) => s + toBase(x.total, x), 0);
+    const ex = exp.reduce((s, x) => s + toBase(x.amount, x), 0);
+    out.push({ date: iso, day: d.getDate(), dow: d.toLocaleDateString('en', { weekday: 'short' }).charAt(0), in: inc, ex });
+  }
+  return out;
+}
 
 function repSum() { const t = ytd(), months = cashSeries(6), max = Math.max(1, ...months.flatMap(m => [m.in, m.ex])), bs = D.settings.currencySymbol, recv = totalAR(); return `<div class="mgrid"><div class="m"><div class="l">YTD billed</div><div class="v pos">${fmt(t.income, bs)}</div></div><div class="m"><div class="l">YTD expenses</div><div class="v neg">${fmt(t.expense, bs)}</div></div><div class="m"><div class="l">Outstanding</div><div class="v ${recv > 0 ? 'warn' : ''}">${fmt(recv, bs)}</div></div><div class="m"><div class="l">Activity</div><div class="v">${D.invoices.length}inv·${D.quotes.length}qt</div></div></div><div class="secH"><h3>Cash flow · last 6 months</h3></div><div class="bars">${months.map(m => `<div class="bcol"><div class="bgrp"><div class="bar b-in" style="height:${Math.max(1, (m.in/max)*100)}%;"></div><div class="bar b-ex" style="height:${Math.max(1, (m.ex/max)*100)}%;"></div></div><div class="blab">${m.label}</div></div>`).join('')}</div><div class="lgnd"><span><i class="b-in"></i> Received</span><span><i class="b-ex"></i> Expenses</span></div>`; }
 
