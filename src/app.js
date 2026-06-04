@@ -258,6 +258,7 @@ function vQuoDetail(id) {
       </div>
       ${partiesHTML(q)}
       ${itemsHTML(q, cs)}
+      <div style="margin-top:18px;padding:12px 14px;background:#fff8e1;border-left:3px solid #f4a623;font-size:10px;font-style:italic;color:#5a4818;line-height:1.5;">Prices are negotiable and dependent on quantities ordered.</div>
       ${gdiFooter()}
     </div>`;
 }
@@ -657,6 +658,7 @@ function buildPdfHtml(doc, isQuote) {
     .pdf-bank { margin-top: 20px; padding-top: 12px; border-top: 0.5px solid #ddd; }
     .pdf-bank .role { font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #777; margin-bottom: 5px; }
     .pdf-bank .lines { font-size: 10px; color: #1a1a1a; white-space: pre-line; line-height: 1.55; }
+    .pdf-note { margin-top: 18px; padding: 11px 14px; background: #fff8e1; border-left: 3px solid #f4a623; font-size: 9.5px; font-style: italic; color: #5a4818; line-height: 1.5; }
     .pdf-foot { margin-top: 28px; padding-top: 12px; border-top: 0.5px solid #eee; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
     .pdf-foot img { height: 26px; opacity: 0.85; }
     .pdf-foot .pby { font-size: 7.5px; color: #999; text-transform: uppercase; letter-spacing: 1.5px; text-align: right; line-height: 1.5; }
@@ -712,6 +714,7 @@ function buildPdfHtml(doc, isQuote) {
     </table>
 
     ${!isQuote && s.bankDetails ? `<div class="pdf-bank"><div class="role">Banking details</div><div class="lines">${esc(s.bankDetails)}</div></div>` : ''}
+    ${isQuote ? `<div class="pdf-note">Prices are negotiable and dependent on quantities ordered.</div>` : ''}
 
     <div class="pdf-foot">
       <img src="${GDI_GLOBE}" alt="Global Deal Inc">
