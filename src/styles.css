@@ -158,8 +158,9 @@ textarea { resize: vertical; min-height: 60px; }
 .empty { text-align: center; padding: 32px 16px; color: var(--text-sec); font-size: 13px; }
 .empty i { font-size: 32px; display: block; margin-bottom: 8px; color: var(--text-ter); }
 
-.li { display: grid; grid-template-columns: 1fr 50px 80px 28px; gap: 6px; margin-bottom: 6px; align-items: center; }
-.li input { font-size: 13px; padding: 6px 8px; }
+.li { display: grid; grid-template-columns: 1fr 45px 55px 70px 26px; gap: 5px; margin-bottom: 6px; align-items: center; }
+.li input { font-size: 13px; padding: 6px 8px; min-width: 0; }
+.li input[data-f=unit] { text-align: center; }
 .li button { background: transparent; border: none; color: var(--neg); cursor: pointer; font-size: 16px; padding: 0; }
 
 /* ====== INVOICE / DOC RENDER ====== */
