@@ -90,13 +90,56 @@ async function fileToDataURL(f) { return new Promise((res, rej) => { const r = n
 
 function parseEmail(text) {
   const r = {};
-  const ap = [/(?:total|amount(?:\s+due)?|grand total|paid|charged)[:\s]+(?:[A-Z]{3}\s*)?[$€£¥₹₦R]?\s*([\d,]+\.\d{2})/i, /[$€£¥₹₦]\s*([\d,]+\.\d{2})\b/, /\b([\d,]+\.\d{2})\s*(?:USD|EUR|GBP|ZAR|JPY|INR|CAD|AUD|NZD)\b/i];
-  for (const p of ap) { const m = text.match(p); if (m) { r.amount = parseFloat(m[1].replace(/,/g, '')); break; } }
+  // Amount patterns: try "Total/Amount/Paid: $X.XX" first (more reliable on receipts)
+  const ap = [
+    /(?:total|grand\s*total|amount(?:\s+due)?|amount\s+paid|paid|charged|balance)[:\s]+(?:[A-Z]{3}\s*)?[$€£¥₹₦R]?\s*([\d,]+\.\d{2})/i,
+    /[$€£¥₹₦]\s*([\d,]+\.\d{2})\b/,
+    /\b([\d,]+\.\d{2})\s*(?:USD|EUR|GBP|ZAR|JPY|INR|CAD|AUD|NZD)\b/i,
+    // Fallback: largest currency-style number in the text (often the total on receipts)
+    /\b(\d{1,5}\.\d{2})\b/g
+  ];
+  for (let i = 0; i < ap.length; i++) {
+    const p = ap[i];
+    if (p.flags && p.flags.includes('g')) {
+      // For the fallback pattern, pick the biggest matched amount
+      const matches = [...text.matchAll(p)].map(m => parseFloat(m[1].replace(/,/g, ''))).filter(n => n > 0 && n < 1000000);
+      if (matches.length) { r.amount = Math.max(...matches); break; }
+    } else {
+      const m = text.match(p);
+      if (m) { r.amount = parseFloat(m[1].replace(/,/g, '')); break; }
+    }
+  }
+  // Date patterns
   const dp = [/(\d{4}-\d{2}-\d{2})/, /(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{4})/i, /(\d{1,2}\/\d{1,2}\/\d{2,4})/];
   for (const p of dp) { const m = text.match(p); if (m) { const d = new Date(m[1]); if (!isNaN(d.getTime())) { r.date = d.toISOString().slice(0,10); break; } } }
+  // Vendor: try "From:" header first (emails), then first non-empty line (receipts)
   const fm = text.match(/from[:\s]+([^\n<\r]+?)(?:<|\n|\r|$)/i);
-  if (fm) r.vendor = fm[1].trim().replace(/["'<>]/g, '').slice(0, 60);
+  if (fm) {
+    r.vendor = fm[1].trim().replace(/["'<>]/g, '').slice(0, 60);
+  } else {
+    // For OCR receipts: first meaningful line is usually the merchant name
+    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 2 && l.length < 60 && /[a-zA-Z]/.test(l));
+    if (lines.length) r.vendor = lines[0].replace(/["'<>*#]/g, '').slice(0, 60);
+  }
   return r;
+}
+
+// On-device OCR using Tesseract.js. Returns extracted text or null on failure.
+// Tesseract auto-loads its engine + language data on first call (~3MB cached after).
+async function runOcr(dataUrl, onProgress) {
+  if (!window.Tesseract) {
+    console.warn('Tesseract.js not loaded');
+    return null;
+  }
+  try {
+    const result = await window.Tesseract.recognize(dataUrl, 'eng', {
+      logger: onProgress ? m => { if (m.status === 'recognizing text') onProgress(Math.round((m.progress || 0) * 100)); } : null
+    });
+    return result?.data?.text || null;
+  } catch (err) {
+    console.error('OCR failed:', err);
+    return null;
+  }
 }
 
 function statusPill(s) { return {paid:'p-s',partial:'p-w',unpaid:'p-g',overdue:'p-d',draft:'p-g',sent:'p-i',accepted:'p-s',rejected:'p-d',converted:'p-i'}[s] || 'p-g'; }
@@ -551,11 +594,43 @@ function hookExpForm() {
       const isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
       try {
         if (isPdf) { const data = await fileToDataURL(file); tmpReceipt = data; tmpRType = 'pdf'; document.getElementById('rcptArea').innerHTML = `<div class="rcpt-pdf" id="rcptImg"><i class="ti ti-file-type-pdf"></i><div><div style="font-weight:500;">PDF attached</div></div></div><div style="display:flex;gap:6px;margin-bottom:10px;"><label class="bl" style="cursor:pointer;"><i class="ti ti-refresh"></i> Replace<input type="file" accept="image/*,.pdf,application/pdf" id="rcptInput" style="display:none;"></label><button type="button" class="bl" id="rcptRemove" style="color:var(--neg);"><i class="ti ti-x"></i> Remove</button></div>`; wireRcpt(); }
-        else { const data = await processImg(file); tmpReceipt = data; tmpRType = 'image'; document.getElementById('rcptArea').innerHTML = `<img class="rcpt" id="rcptImg" src="${data}" alt="Receipt"><div style="display:flex;gap:6px;margin-bottom:10px;"><label class="bl" style="cursor:pointer;"><i class="ti ti-refresh"></i> Replace<input type="file" accept="image/*,.pdf,application/pdf" id="rcptInput" style="display:none;"></label><button type="button" class="bl" id="rcptRemove" style="color:var(--neg);"><i class="ti ti-x"></i> Remove</button></div>`; wireRcpt(); }
+        else {
+          const data = await processImg(file); tmpReceipt = data; tmpRType = 'image';
+          document.getElementById('rcptArea').innerHTML = `<img class="rcpt" id="rcptImg" src="${data}" alt="Receipt"><div id="scanStatus" class="scan-status"><i class="ti ti-scan"></i> <span>Scanning receipt…</span></div><div style="display:flex;gap:6px;margin-bottom:10px;"><label class="bl" style="cursor:pointer;"><i class="ti ti-refresh"></i> Replace<input type="file" accept="image/*,.pdf,application/pdf" id="rcptInput" style="display:none;"></label><button type="button" class="bl" id="rcptRemove" style="color:var(--neg);"><i class="ti ti-x"></i> Remove</button></div>`;
+          wireRcpt();
+          // Kick off OCR in the background — don't block the user
+          runReceiptOcr(data);
+        }
       } catch (err) { toast('Could not load file'); }
     }; });
     const rmv = document.getElementById('rcptRemove');
     if (rmv) rmv.onclick = () => { tmpReceipt = null; tmpRType = 'image'; document.getElementById('rcptArea').innerHTML = `<div class="upload-opts"><label class="cam"><i class="ti ti-camera"></i><span>Snap with camera</span><input type="file" accept="image/*" capture="environment" id="rcptInputCam"></label><label class="cam"><i class="ti ti-upload"></i><span>Upload image or PDF</span><input type="file" accept="image/*,.pdf,application/pdf" id="rcptInput"></label></div>`; wireRcpt(); };
+  }
+
+  // OCR + auto-fill blank fields. Runs in the background, never blocks the form.
+  async function runReceiptOcr(dataUrl) {
+    const status = () => document.getElementById('scanStatus');
+    const text = await runOcr(dataUrl, pct => {
+      const s = status();
+      if (s) s.querySelector('span').textContent = `Scanning receipt… ${pct}%`;
+    });
+    const s = status();
+    if (!text) { if (s) { s.classList.add('done'); s.innerHTML = '<i class="ti ti-info-circle"></i> <span>Couldn\u2019t read this receipt — fill in manually.</span>'; setTimeout(() => s.remove(), 4000); } return; }
+    const parsed = parseEmail(text);
+    let n = 0;
+    if (parsed.amount && !f.amount.value) { f.amount.value = parsed.amount; n++; }
+    if (parsed.date) { f.date.value = parsed.date; n++; }
+    if (parsed.vendor && !f.vendor.value) { f.vendor.value = parsed.vendor; n++; }
+    if (s) {
+      if (n > 0) {
+        s.classList.add('done', 'ok');
+        s.innerHTML = `<i class="ti ti-check"></i> <span>Scanned: extracted ${n} field${n>1?'s':''}. Check before saving.</span>`;
+      } else {
+        s.classList.add('done');
+        s.innerHTML = '<i class="ti ti-info-circle"></i> <span>Couldn\u2019t auto-fill — please enter manually.</span>';
+      }
+      setTimeout(() => s.remove(), 5000);
+    }
   }
   f.onsubmit = async ev => {
     ev.preventDefault();

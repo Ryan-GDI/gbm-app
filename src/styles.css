@@ -186,6 +186,11 @@ textarea { resize: vertical; min-height: 60px; }
 
 /* ====== RECEIPTS ====== */
 .rcpt { width: 100%; max-height: 260px; object-fit: contain; border-radius: 8px; background: var(--bg-sec); margin-bottom: 10px; display: block; }
+.scan-status { display: flex; align-items: center; gap: 7px; padding: 8px 12px; margin-bottom: 10px; border-radius: 8px; background: var(--info-bg); color: var(--info-tx); font-size: 12px; border: 0.5px solid var(--info-bd); }
+.scan-status i { font-size: 15px; }
+.scan-status.done { animation: scanFade 0.3s ease; }
+.scan-status.done.ok { background: var(--pos-bg); color: var(--pos); border-color: var(--pos); }
+@keyframes scanFade { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
 .rcpt-pdf { display: flex; align-items: center; gap: 10px; padding: 16px; background: var(--bg-sec); border-radius: 8px; margin-bottom: 10px; }
 .rcpt-pdf i { font-size: 32px; color: var(--neg); }
 
